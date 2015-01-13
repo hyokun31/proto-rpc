@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd">
+
+    <!-- ================ Resource Manager Monitoring API ================ -->
+
+    <bean id="resourceManagerApi" class="com.proto.client.AddressBookServiceImpl"/>
+
+    <bean name="v2" class="org.springframework.remoting.httpinvoker.SimpleHttpInvokerServiceExporter">
+        <property name="service" ref="resourceManagerApi"/>
+        <property name="serviceInterface" value="com.proto.provider.AddressBookService"/>
+    </bean>
+
+    <!-- ================ Resource Manager Monitoring HTTP Server ================ -->
+
+    <bean id="taskExecutor" class="org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor">
+        <property name="corePoolSize" value="3"/>
+        <property name="maxPoolSize" value="10"/>
+        <property name="queueCapacity" value="25"/>
+    </bean>
+
+    <bean id="httpServer" class="org.springframework.remoting.support.SimpleHttpServerFactoryBean">
+        <property name="contexts">
+            <map>
+                <entry key="/api/rm" value-ref="v2"/>
+            </map>
+        </property>
+        <property name="executor" ref="taskExecutor"/>
+        <property name="shutdownDelay" value="2000"/>
+        <property name="port" value="18050"/>
+        <property name="hostname" value="0.0.0.0"/>
+    </bean>
+</beans>
